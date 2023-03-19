@@ -27,11 +27,49 @@ session = Session(engine)
 # Flask setup
 app = Flask(__name__)
 
-# Homepage route
+    # Homepage route
 @app.route("/")
 def home():
     """Available routes"""
-    return   
+    return (
+        "Available Routes:<br/><br/>"
+        "/api/v1.0/precipitation<br/>"
+        "/api/v1.0/stations<br/>"
+        "/api/v1.0/tobs<br/>"
+        "/api/v1.0/start<br/>"
+        "/api/v1.0/start/end"
+    )
+
+    # Precipitation Route
+@app.route("/api/v1.0/precipitation")
+def precipitation():
+    """Precipitation data of the last 12 months (from 2016-08-23 to 2017-08-23)"""
+    
+        # Query to get date an precipitation data
+    query_date = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+    prcp_scores = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= query_date).order_by(Measurement.date).all()
+
+        # Create dictionary in json format
+    preciptData = []
+    for row in prcp_scores:
+        prcp_dict = {}
+        prcp_dict["date"] = row.date
+        prcp_dict["prcp"] = row.prcp
+        preciptData.append(prcp_dict)
+
+    return jsonify(preciptData)
+
+    # Stations Route
+@app.route("/api/v1.0/stations")
+def stations():  
+    """Stations data"""
+    query_stations = session.query(Station.name).all()
+    stations = list(np.ravel(query_stations))
+
+    return jsonify(stations)
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 
